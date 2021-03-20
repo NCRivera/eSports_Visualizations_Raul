@@ -1,0 +1,69 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+## DATA https://www.kaggle.com/aayushmishra1512/twitchdata 
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+twitchdata <- read.csv("twitchdata-update.csv")
+head(twitchdata)
+```
+
+##First Plot
+```{r}
+td <- ggplot(data = twitchdata,mapping = aes(x = Followers.gained,
+                                             y = Stream.time.minutes.)) + geom_point(color = "purple", alpha = .075) +
+  geom_smooth(method = "lm", se =FALSE) + 
+  scale_x_continuous(labels = scales::number_format(scale = 1e-6, suffix = "M")) + 
+  scale_y_continuous(labels = scales::number_format(scale = 1e-4, suffix = "K")) + 
+  theme_bw() +
+   labs(x = "Followers Gained",
+       y = "Streaming",
+       title = "Regression for Followers Gained on Twitch in Time Stream",
+       subtitle = "Data point are Followers Gained-Stream minutes",
+       caption = "Source:Kaggle")
+td
+ggsave(file = "FollowersGainedStream_minutes.png", plot = td)
+```
+
+
+##Second Plot
+```{r}
+slanguage <- c("English", "French", "German", "Korean", "Portuguese",
+               "Russian", "Spanish")
+language_S <- subset(twitchdata, subset = Language %in% slanguage)
+
+head(language_S)
+```
+
+
+```{r}
+
+breaks <- data.frame(
+  breaks = c("100K", "200K", "300K", "400K", "500K"),
+  followers = c(1 * 10^6, 2 * 10^6, 3 * 10^6, 4 * 10^6, 5 * 10^6)
+)
+
+ml <- ggplot(data = language_S, mapping = aes(x = Followers, y = Peak.viewers)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth() + 
+  # scale_x_continuous(labels = scales::dollar_format(scale = 1e-4, suffix = "K")) + 
+  # scale_y_continuous(labels = scales::dollar_format(scale = 1e-4, suffix = "K")) + 
+  # geom_vline(data = breaks, mapping = aes(xintercept = followers)) + 
+  scale_x_continuous(labels = scales::number_format(scale = 1e-4, suffix = "K")) + 
+  scale_y_continuous(labels = scales::number_format(scale = 1e-4, suffix = "K")) + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  facet_wrap(~Language, ncol = 4, scales = "free") +
+  theme_bw() +
+  labs(x = "Followers",
+       y = "Viewers",
+       title = "Viewers for Streamers on Twitch by selected Language",
+       subtitle = "Source:Kaggle")
+ml
+ggsave(file = "followers_Language_facetNcol.png", plot = ml)
+```
+
